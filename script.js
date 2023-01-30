@@ -152,7 +152,9 @@ btnTransfer.addEventListener('click', e => {
             recipientAccount.movements.push(inputTransferAmount.value);
             console.log(currentAccount.movements, recipientAccount.movements);
             updateUI(currentAccount);
-            replyPopup.textContent = `Transfer completed \n ${inputTransferAmount.value} was transferred to ${recipientAccount}.\n Thanks for banking with us.`;
+            replyPopup.textContent = `Transfer completed. 
+            $${inputTransferAmount.value} was transferred to ${recipientAccount.owner}.\n
+            Thanks for banking with us.`;
             popup.style.display = 'block';
             inputTransferAmount.value = inputTransferTo.value = '';
             popup.addEventListener('click', e => {
@@ -202,7 +204,7 @@ btnLogin.addEventListener('click', e => {
             ${currentAccount.owner.split(' ')[0]}`;
             setTimeout(() => {
                 containerApp.style.opacity = 1;
-            }, 2000);
+            }, 500);
             updateUI(currentAccount);
             inputLoginPin.value = inputLoginUsername.value = '';
             inputLoginUsername.blur();
@@ -210,7 +212,8 @@ btnLogin.addEventListener('click', e => {
             popup.style.display = 'block';
             setTimeout(() => {
                 popup.style.display = 'none';
-            }, 2000);
+                popup.style.zIndex = 100;
+            }, 1000);
         } else {
             replyPopup.textContent = `Invalid User Login pin`;
             popup.style.display = 'block';
@@ -305,6 +308,7 @@ btnClose.addEventListener('click', e => {
     }
     console.log(accounts);
 });
+
 // console.log(accounts);
 //
 
