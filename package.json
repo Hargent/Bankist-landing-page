@@ -1,0 +1,25 @@
+{
+  "title": "SimpleBackdrop Material Demo",
+  "name": "simplebackdrop-material-demo-forked",
+  "devDependencies": {
+    "react-scripts": "latest"
+  },
+  "description": "https://github.com/mui/material-ui/blob/v5.5.2/docs/data/material/components/backdrop/SimpleBackdrop.js",
+  "dependencies": {
+    "@auto-it/released": "10.36.5",
+    "@emotion/react": "latest",
+    "@emotion/styled": "latest",
+    "@mui/material": "latest",
+    "@typescript-eslint/typescript-estree": "5.16.0",
+    "auto-save": "1.0.0",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "version": "0.0.0",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
