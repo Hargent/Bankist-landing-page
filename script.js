@@ -63,8 +63,9 @@ const inputClosePin = document.querySelector('.form__input--pin');
 const replyPopup = document.querySelector('.popup-message');
 const popup = document.querySelector('.popup');
 
-const displayMovement = function(acc) {
+const displayMovement = function(acc, sort = false) {
     const movements = acc.movements;
+    const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
     movements.forEach((movement, index) => {
         const type = movement > 0 ? 'deposit' : 'withdrawal';
         const html = `
@@ -256,7 +257,7 @@ btnLoan.addEventListener('click', e => {
         // successful deletion reply
         inputLoanAmount.value = '';
         replyPopup.textContent = `Loan Successful.\nYour account has been credited with ${
-      loanAmount * eurToUsd
+      Math.trunc(loanAmount * eurToUsd)
     }$`;
         popup.style.display = 'block';
         popup.addEventListener('click', e => {
@@ -308,8 +309,14 @@ btnClose.addEventListener('click', e => {
     }
     console.log(accounts);
 });
+let sorted = false;
+btnSort.addEventListener('click', (e) => {
+    e.preventDefaults();
+    displayMovement(currentAccount.movements, !sorted);
+    sorted = !sorted;
+})
 
-// console.log(accounts);
+console.log(accounts);
 //
 
 // const eurToUsd = 1.1;
@@ -326,84 +333,94 @@ btnClose.addEventListener('click', e => {
 
 const movements = [200, 450, -400, 7000, -650, -130, 70, 1300];
 
-// FILTER METHOD
-// const deposits = movements.filter(mov => mov > 0);
-// const withdrawals = movements.filter(mov => mov < 0);
-// console.log(movements);
-// console.log(deposits);
-// console.log(withdrawals);
-// REDUCE METHOD
-// const balance = movements.reduce((acc, movement) => acc + movement, 0);
-// console.log(balance);
-// /////////////////////////////////////////////////
-// for (const [i, mov] of movements.entries()) {
-// //     mov > 0 ?
-// //         console.log(`
-// Movement $ { i + 1 }: You deposited $ { mov }
-// `) :
-// //         console.log(`
-// Movement $ { i + 1 }: You Withdrew $ { Math.abs(mov) }
-// `);
-// // }
-// // movements.forEach((mov, i, arr) => {
-// //     mov > 0 ?
-// //         console.log(`
-// Movement $ { i + 1 }: You deposited $ { mov }
-// `) :
-// //         console.log(`
-// // Movement $ { i + 1 }: You Withdrew $ { Math.abs(mov) }
-// `);
-// // });
+// ascending
+console.log(
+        movements.sort((a, b) => a - b)
+        // )
+        // descending
+        console.log(
+            movements.sort((a, b) => b - a)
+        )
 
-// // const currencies = new Map([
-// //     ['USD', 'United States dollar'],
-// //     ['EUR', 'Euro'],
-// //     ['GBP', 'Pound sterling'],
-// // ]);
 
-// // currencies.forEach((value, key, map) => {
-// //     console.log(`
-// $ { key }: $ { value }
-// `);
-// // });
-// // const uniqueCurrencies = new Set([
-// //     'USD',
-// //     'EUR',
-// //     'GBP',
-// //     'USD',
-// //     'NGN',
-// //     'JPY',
-// //     'EUR',
-// // ]);
-// // // console.log(uniqueCurrencies);
-// // uniqueCurrencies.forEach((value, _, map) => {
-// //     // console.log(`
-// $ { value }: $ { value }
-// `);
-// // });
-// // // coding challenge 1
-// // const checkDogs = (julia, kate) => {
-// //     let juliaNew = julia.slice(1, 3); // [...julia];
-// //     // juliaNew.splice(0, 1);
-// //     // juliaNew.splice(-2);
+        // FILTER METHOD
+        // const deposits = movements.filter(mov => mov > 0);
+        // const withdrawals = movements.filter(mov => mov < 0);
+        // console.log(movements);
+        // console.log(deposits);
+        // console.log(withdrawals);
+        // REDUCE METHOD
+        // const balance = movements.reduce((acc, movement) => acc + movement, 0);
+        // console.log(balance);
+        // /////////////////////////////////////////////////
+        // for (const [i, mov] of movements.entries()) {
+        // //     mov > 0 ?
+        // //         console.log(`
+        // Movement $ { i + 1 }: You deposited $ { mov }
+        // `) :
+        // //         console.log(`
+        // Movement $ { i + 1 }: You Withdrew $ { Math.abs(mov) }
+        // `);
+        // // }
+        // // movements.forEach((mov, i, arr) => {
+        // //     mov > 0 ?
+        // //         console.log(`
+        // Movement $ { i + 1 }: You deposited $ { mov }
+        // `) :
+        // //         console.log(`
+        // // Movement $ { i + 1 }: You Withdrew $ { Math.abs(mov) }
+        // `);
+        // // });
 
-// //     console.log(julia, juliaNew, kate);
-// //     newDogList = juliaNew.concat(kate);
-// //     for (const dog of newDogList) {
-// //         dog >= 3 ?
-// //             console.log(
-// //                 `
-// Dog number $ {
-//             newDogList.indexOf(dog) + 1
-//           } is an Adult and is ${dog} years old.`
-//             ) :
-//             console.log(
-//                 `Dog number ${
-//             newDogList.indexOf(dog) + 1
-//           } is still a puppy and is ${dog} years old.`
-//             );
-//     }
-//     return newDogList;
-// };
-// console.log(checkDogs([3, 5, 2, 12, 7], [4, 1, 15, 8, 3]));
-// console.log(checkDogs([9, 16, 6, 8, 3], [10, 5, 6, 1, 4]));
+        // // const currencies = new Map([
+        // //     ['USD', 'United States dollar'],
+        // //     ['EUR', 'Euro'],
+        // //     ['GBP', 'Pound sterling'],
+        // // ]);
+
+        // // currencies.forEach((value, key, map) => {
+        // //     console.log(`
+        // $ { key }: $ { value }
+        // `);
+        // // });
+        // // const uniqueCurrencies = new Set([
+        // //     'USD',
+        // //     'EUR',
+        // //     'GBP',
+        // //     'USD',
+        // //     'NGN',
+        // //     'JPY',
+        // //     'EUR',
+        // // ]);
+        // // // console.log(uniqueCurrencies);
+        // // uniqueCurrencies.forEach((value, _, map) => {
+        // //     // console.log(`
+        // $ { value }: $ { value }
+        // `);
+        // // });
+        // // // coding challenge 1
+        // // const checkDogs = (julia, kate) => {
+        // //     let juliaNew = julia.slice(1, 3); // [...julia];
+        // //     // juliaNew.splice(0, 1);
+        // //     // juliaNew.splice(-2);
+
+        // //     console.log(julia, juliaNew, kate);
+        // //     newDogList = juliaNew.concat(kate);
+        // //     for (const dog of newDogList) {
+        // //         dog >= 3 ?
+        // //             console.log(
+        // //                 `
+        // Dog number $ {
+        //             newDogList.indexOf(dog) + 1
+        //           } is an Adult and is ${dog} years old.`
+        //             ) :
+        //             console.log(
+        //                 `Dog number ${
+        //             newDogList.indexOf(dog) + 1
+        //           } is still a puppy and is ${dog} years old.`
+        //             );
+        //     }
+        //     return newDogList;
+        // };
+        // console.log(checkDogs([3, 5, 2, 12, 7], [4, 1, 15, 8, 3]));
+        // console.log(checkDogs([9, 16, 6, 8, 3], [10, 5, 6, 1, 4]));
