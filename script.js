@@ -14,11 +14,11 @@ const account1 = {
   movementsDates: [
     '2019-11-18T21:31:17.178Z',
     '2019-12-23T07:42:02.383Z',
-    '2020-01-28T09:15:04.904Z',
+    '2023-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
-    '2020-05-08T14:11:59.604Z',
+    '2023-05-08T14:11:59.604Z',
     '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
+    '2023-02-02T23:00:00.000Z',
     '2020-07-12T10:51:36.790Z',
   ],
   currency: 'EUR',
@@ -60,7 +60,7 @@ const account3 = {
     '2020-07-26T12:01:20.894Z',
   ],
   currency: 'GBP',
-  locale: 'en-UK',
+  locale: 'en-GB',
 };
 
 const account4 = {
@@ -79,10 +79,12 @@ const account4 = {
     '2020-07-26T12:01:20.894Z',
   ],
   currency: 'NGN',
-  locale: 'en-NGN',
+  locale: 'ca-ES',
 };
 
 const accounts = [account1, account2, account3, account4];
+// creating locality with browser language
+const locale = navigator.language;
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -111,77 +113,79 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 const replyPopup = document.querySelector('.popup-message');
 const popup = document.querySelector('.popup');
-
-// calculate days passed
-const calcDaysPassed = (currentDate, pastDay) => {
-  console.log(currentDate, pastDay);
-  const daysPassed = Math.round(
-    Math.abs(currentDate - pastDay) / (1000 * 60 * 60 * 24)
-  );
-  if (currentDate - pastDay > 0) {
-  }
-  return daysPassed;
+// creating options for api
+const options = {
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  day: 'numeric',
+  //   month: 'long',
+  month: 'long',
+  year: 'numeric',
+  //   weekday: 'long',
 };
+// for today's and yesterday transaction
+const newOptions = {
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+};
+// Options for API formatting of currency
+accounts.map(acc => {
+  acc.currencyOptions = {
+    style: 'currency',
+    currency: acc.currency,
+  };
+});
 
-console.log(
-  'days passed is : ' +
-    calcDaysPassed(new Date(2023, 1, 25), new Date(2023, 2, 25))
-);
-
+// function to format currency values
+const formatCurrency = (value, account) =>
+  new Intl.NumberFormat(account.locale, account.currencyOptions).format(value);
 //Creating date
-const formatDate = stamp => {
+const formatDate = (stamp, format) => {
   let date;
   if (stamp === undefined) {
     date = new Date();
   } else {
     date = new Date(stamp);
   }
-  const day = `${date.getDate()}`.padStart(2, 0);
-  const month = `${date.getMonth() + 1}`.padStart(2, 0);
-  const year = date.getFullYear();
-  const hour = `${date.getHours()}`.padStart(2, 0);
-  const minute = `${date.getMinutes()}`.padStart(2, 0);
-  const second = `${date.getSeconds()}`.padStart(2, 0);
+  let comment;
+  // use calcDaysPassed function;
+  const calcDaysPassed = (date1, date2) => {
+    return Math.round(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
+  };
 
+  const daysPassed = calcDaysPassed(new Date(), date);
+  if (daysPassed === 0) {
+    comment = `Today ${new Intl.DateTimeFormat(format, newOptions).format(
+      date
+    )}`;
+  } else if (daysPassed === 1) {
+    comment = `Yesterday ${new Intl.DateTimeFormat(format, newOptions).format(
+      date
+    )}`;
+  } else if (daysPassed <= 7 && daysPassed > 1) {
+    comment = `${daysPassed} days ago ${new Intl.DateTimeFormat(
+      format,
+      newOptions
+    ).format()}`;
+  } else {
+    //   using api
+    comment = new Intl.DateTimeFormat(format).format(date);
+  }
+  console.log(comment);
   return {
-    day: day,
-    month: month,
-    year: year,
-    minute: minute,
-    second: second,
-    hours: hour,
+    date: date,
+    comment: comment,
   };
 };
-//return today,yesterday ,exact date
-const returnDays = () => {
-  let daysPassed;
-  if (daysPassed === 0) {
-    return 'Today';
-  } else if (daysPassed === 1) {
-    return 'Yesterday';
-  } else {
-    return daysPassed;
-  }
-
-  return report;
-};
-
-//
-// date, daysPassed, exactDate;
-
-//
-
-console.log(
-  'days passed is : ' +
-    calcDaysPassed(new Date(2023, 1, 25), new Date(2023, 2, 25))
-);
 
 const displayMovement = function (acc, sort) {
   containerMovements.innerHTML = '';
 
   const movements = acc.movements;
   const dates = acc.movementsDates;
-
+  const dateFormat = acc.locale;
   const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
   movs.forEach((movement, index) => {
     const type = movement > 0 ? 'deposit' : 'withdrawal';
@@ -190,13 +194,12 @@ const displayMovement = function (acc, sort) {
                         <div class = "movements__type movements__type--${type}">
                         ${index + 1} ${type}</div>
                         <div class = "movements__date">${
-                          formatDate(dates[index]).day
-                        }/${formatDate(dates[index]).month}/${
-      formatDate(dates[index]).year
-    }</div>
-                        <div class = "movements__value"> ${movement.toFixed(
-                          2
-                        )}€ </div>
+                          formatDate(dates[index], dateFormat).comment
+                        }</div>
+                        <div class = "movements__value"> ${formatCurrency(
+                          movement,
+                          acc
+                        )} </div>
                     </div>;
                     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -206,17 +209,17 @@ let balance = 0;
 const displayBalance = acc => {
   const movements = acc.movements;
   balance = movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance} €`;
+  labelBalance.textContent = `${formatCurrency(balance, acc)}`;
 };
 const displaySummary = acc => {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes} €`;
+  labelSumIn.textContent = `${formatCurrency(incomes, acc)}`;
   const expenses = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(expenses)} €`;
+  labelSumOut.textContent = `${formatCurrency(Math.abs(expenses), acc)}`;
   const interests = acc.movements
     .filter(move => move > 0)
     .map(mov => {
@@ -224,7 +227,7 @@ const displaySummary = acc => {
     })
     .filter(interest => interest >= 1)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumInterest.textContent = `${Math.abs(interests)} €`;
+  labelSumInterest.textContent = `${formatCurrency(Math.abs(interests), acc)}`;
 };
 
 const eurToUsd = 1.1;
@@ -257,44 +260,85 @@ const createUserNames = accounts => {
 createUserNames(accounts);
 
 // EVENT HANDLERS
-let currentAccount;
+let currentAccount, timer;
 const updateUI = accounts => {
   displayMovement(accounts);
   displayBalance(accounts);
   displaySummary(accounts);
 };
 
-// Always logger in
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 1;
+// Logout function
+const startLogoutTimer = () => {
+  // set time
+  let time = 300;
+  //call time every seconds
+  const tick = () => {
+    const min = `${Math.trunc(time / 60)}`.padStart(2, 0);
+    const seconds = `${time % 60}`.padStart(2, 0);
 
-// Current balance date
+    // print remaining time
+    labelTimer.textContent = `${min}:${seconds}`;
 
-labelDate.textContent = `${formatDate().day}/${formatDate().month}/${
-  formatDate().year
-}, ${formatDate().hours}:${formatDate().minute}:${formatDate().second}`;
-
-//
-btnTransfer.addEventListener('click', e => {
-  e.preventDefault();
-  recipientAccount = accounts.find(
-    account => account.userName === inputTransferTo.value
-  );
-  console.log(currentAccount, recipientAccount);
-  if (recipientAccount !== undefined) {
-    // let balance = currentAccount.movements.reduce((acc, mov) => acc + mov, 0)
-    console.log(balance);
-    if (inputTransferAmount.value <= balance) {
-      currentAccount.movements.push(inputTransferAmount.value * -1);
-      recipientAccount.movements.push(inputTransferAmount.value);
-      console.log(currentAccount.movements, recipientAccount.movements);
-      updateUI(currentAccount);
-      replyPopup.textContent = `Transfer completed. 
-                $${inputTransferAmount.value} was transferred to ${recipientAccount.owner}.\n
-                Thanks for banking with us.`;
+    //at time = 0, logout user
+    if (time == 0) {
+      clearInterval(timer);
+      setTimeout(() => {
+        labelWelcome.textContent = `Log in to enjoy a top tier banking experience.`;
+        containerApp.style.opacity = 0;
+        popup.style.display = 'none';
+      }, 2000);
+      replyPopup.textContent = `You time duration for inactivity is up...\nLogging off....`;
       popup.style.display = 'block';
-      inputTransferAmount.value = inputTransferTo.value = '';
+    }
+    time--;
+  };
+  tick();
+  const timer = setInterval(() => tick, 1000);
+  return timer;
+};
+
+// Always logged in
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 1;
+// Log IN Event
+btnLogin.addEventListener('click', e => {
+  e.preventDefault();
+
+  currentAccount = accounts.find(
+    account => account.userName === inputLoginUsername.value
+  );
+
+  if (currentAccount !== undefined) {
+    if (currentAccount.pin === Number(inputLoginPin.value)) {
+      setTimeout(() => {
+        labelWelcome.textContent = `Welcome back, 
+            ${currentAccount.owner.split(' ')[0]}`;
+        containerApp.style.opacity = 1;
+        //   logout timer
+        //
+        updateUI(currentAccount);
+        inputLoginPin.value = inputLoginUsername.value = '';
+        inputLoginUsername.blur();
+        // change account label date
+        labelDate.textContent = new Intl.DateTimeFormat(
+          currentAccount.locale,
+          options
+        ).format(formatDate().date);
+      }, 500);
+
+      replyPopup.textContent = `Successfully logged in...\nLoading your Account details....`;
+      popup.style.display = 'block';
+      setTimeout(() => {
+        //   check for existing timer
+        if (timer) clearInterval(timer);
+        timer = startLogoutTimer();
+
+        popup.style.display = 'none';
+      }, 4000);
+    } else {
+      popup.style.display = 'block';
+      replyPopup.textContent = `Invalid User Login pin`;
       popup.addEventListener('click', e => {
         e.target.classList.value === 'popup'
           ? (popup.style.display = 'none')
@@ -303,6 +347,56 @@ btnTransfer.addEventListener('click', e => {
       setTimeout(() => {
         popup.style.display = 'none';
       }, 7000);
+    }
+  } else {
+    popup.style.display = 'block';
+    inputLoginPin.value = inputLoginUsername.value = '';
+    inputLoginUsername.blur();
+    replyPopup.textContent = `Invalid User Details`;
+    popup.addEventListener('click', e => {
+      e.target.classList.value === 'popup'
+        ? (popup.style.display = 'none')
+        : '';
+    });
+    setTimeout(() => {
+      popup.style.display = 'none';
+    }, 7000);
+  }
+});
+// Current balance date
+
+//
+btnTransfer.addEventListener('click', e => {
+  e.preventDefault();
+
+  recipientAccount = accounts.find(
+    account => account.userName === inputTransferTo.value
+  );
+  console.log(currentAccount, recipientAccount);
+  if (recipientAccount !== undefined) {
+    // let balance = currentAccount.movements.reduce((acc, mov) => acc + mov, 0)
+    if (inputTransferAmount.value <= balance) {
+      setTimeout(() => {
+        currentAccount.movements.push(inputTransferAmount.value * -1);
+        recipientAccount.movements.push(inputTransferAmount.value);
+
+        updateUI(currentAccount);
+        replyPopup.textContent = `Transfer completed. 
+                $${inputTransferAmount.value} was transferred to ${recipientAccount.owner}.\n
+                Thanks for banking with us.`;
+        popup.style.display = 'block';
+        inputTransferAmount.value = inputTransferTo.value = '';
+        popup.addEventListener('click', e => {
+          e.target.classList.value === 'popup'
+            ? (popup.style.display = 'none')
+            : '';
+        });
+      }, 5000);
+      replyPopup.textContent = `Processing Transaction \nPlease wait.....`;
+      popup.style.display = 'block';
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 8000);
     } else {
       popup.style.display = 'block';
       replyPopup.textContent = `Insufficient funds`;
@@ -327,55 +421,15 @@ btnTransfer.addEventListener('click', e => {
     });
     setTimeout(() => {
       popup.style.display = 'none';
-    }, 7000);
+    }, 8000);
   }
+  clearInterval(timer);
 });
-btnLogin.addEventListener('click', e => {
-  e.preventDefault();
-  currentAccount = accounts.find(
-    account => account.userName === inputLoginUsername.value
-  );
-  console.log(currentAccount);
-  if (currentAccount !== undefined) {
-    if (currentAccount.pin === Number(inputLoginPin.value)) {
-      labelWelcome.textContent = `Welcome back, 
-                ${currentAccount.owner.split(' ')[0]}`;
-      setTimeout(() => {
-        containerApp.style.opacity = 1;
-      }, 500);
-      updateUI(currentAccount);
-      inputLoginPin.value = inputLoginUsername.value = '';
-      inputLoginUsername.blur();
-    } else {
-      replyPopup.textContent = `Invalid User Login pin`;
-      popup.style.display = 'block';
-      popup.addEventListener('click', e => {
-        e.target.classList.value === 'popup'
-          ? (popup.style.display = 'none')
-          : '';
-      });
-      setTimeout(() => {
-        popup.style.display = 'none';
-      }, 7000);
-    }
-  } else {
-    inputLoginPin.value = inputLoginUsername.value = '';
-    inputLoginUsername.blur();
-    replyPopup.textContent = `Invalid User Details`;
-    popup.style.display = 'block';
-    popup.addEventListener('click', e => {
-      e.target.classList.value === 'popup'
-        ? (popup.style.display = 'none')
-        : '';
-    });
-    setTimeout(() => {
-      popup.style.display = 'none';
-    }, 7000);
-  }
-});
+
 // collecting load
 btnLoan.addEventListener('click', e => {
   e.preventDefault();
+
   const loanAmount = Number(inputLoanAmount.value);
 
   const anyDeposits = currentAccount.movements.some(
@@ -383,23 +437,28 @@ btnLoan.addEventListener('click', e => {
   );
   if (loanAmount > 0 && anyDeposits) {
     //
-    currentAccount.movements.push(loanAmount);
-    updateUI(currentAccount);
-    // successful deletion reply
-    inputLoanAmount.value = '';
-    replyPopup.textContent = `Loan Successful.\nYour account has been credited with ${Math.trunc(
-      loanAmount * eurToUsd
-    )}$`;
+    setTimeout(() => {
+      currentAccount.movements.push(loanAmount);
+      updateUI(currentAccount);
+      // successful deletion reply
+      inputLoanAmount.value = '';
+      replyPopup.textContent = `Loan Successful.\nYour account has been credited with ${Math.trunc(
+        loanAmount * eurToUsd
+      )}$`;
+      popup.style.display = 'block';
+      popup.addEventListener('click', e => {
+        e.target.classList.value === 'popup'
+          ? (popup.style.display = 'none')
+          : '';
+      });
+    }, 4000);
+    replyPopup.textContent = `Processing Transaction \nPlease wait.....`;
     popup.style.display = 'block';
-    popup.addEventListener('click', e => {
-      e.target.classList.value === 'popup'
-        ? (popup.style.display = 'none')
-        : '';
-    });
     setTimeout(() => {
       popup.style.display = 'none';
-    }, 5000);
+    }, 7000);
   }
+  clearInterval(timer);
 });
 
 // closing Account
@@ -412,17 +471,21 @@ btnClose.addEventListener('click', e => {
     const index = accounts.findIndex(
       acc => acc.userName === currentAccount.userName
     );
-    // delete account
-    accounts.splice(index, 1);
-    // successful deletion reply
-    replyPopup.textContent = `Successfully Deleted your Account`;
+    setTimeout(() => {
+      // delete account
+      accounts.splice(index, 1);
+      // successful deletion reply
+      replyPopup.textContent = `Successfully Deleted your Account`;
+      popup.style.display = 'block';
+      // hide Ui
+    }, 7000);
+    replyPopup.textContent = `Processing Your Request \nPlease wait.....`;
     popup.style.display = 'block';
     setTimeout(() => {
+      containerApp.style.opacity = 0;
+      inputClosePin.value = inputCloseUsername.value = '';
       popup.style.display = 'none';
     }, 10000);
-    // hide Ui
-    containerApp.style.opacity = 0;
-    inputClosePin.value = inputCloseUsername.value = '';
   } else {
     // failed deletion reply
     replyPopup.textContent = `Incorrect user details\nAccount not deleted.`;
