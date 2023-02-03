@@ -167,7 +167,7 @@ const returnDays = () => {
 };
 
 //
-date, daysPassed, exactDate;
+// date, daysPassed, exactDate;
 
 //
 
